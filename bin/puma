@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+#
+# Copyright (c) 2011 Evan Phoenix
+#
+
+require 'puma/cli'
+require 'puma_worker_killer'
+
+module PumaClusterWorkerKillerInit
+  # This code must be injected on a method that
+  # a) runs just once
+  # b) gets executed within main process due to
+  #    https://github.com/puma/puma/commit/7c41d0887f29385a26f1199b198d5a7c434bc95d#diff-c2ca2259d38a531715284b3ec3f4b698R186
+  # c) is run after daemonization, because that ruins threads
+  def start_control
+    super
+
+    PumaWorkerKiller.config do |config|
+      config.ram           = 1024            # total RAM shared between ALL puma processes
+      config.frequency     = 60*5            # seconds between checks
+      config.percent_usage = 1               # config.ram * config.percent_usage = real max RAM
+    end
+
+    PumaWorkerKiller.start
+  end
+end
+
+Puma::Cluster.prepend PumaClusterWorkerKillerInit
+
+cli = Puma::CLI.new ARGV
+
+cli.run
