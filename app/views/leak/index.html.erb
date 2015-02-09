@@ -1,0 +1,19 @@
+<div>
+  Process
+  <%= Process.pid %>
+  is using
+  <strong>
+    <%= (@memory_used / 1024).to_i %>
+  </strong>
+  MB of RAM
+</div>
+
+<div>
+  PumaWorkerKiller should allow maximum of
+  <strong>
+    <%= PumaWorkerKiller.ram %>
+  </strong>
+  MB of RAM
+</div>
+
+<%= link_to 'Leak some RAM!', '/leak' %>
